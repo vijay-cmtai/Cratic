@@ -1,0 +1,36 @@
+
+{
+  "header": {
+    "solutions": "Solutions",
+    "language": "English",
+    "currency": "USD",
+    "share": "Share",
+    "likedItems": "Liked Items",
+    "noLikedItems": "No liked items yet.",
+    "noLikedItemsHint": "Click the heart on a product to save it.",
+    "myAccount": "My Account",
+    "supplierPortal": "Supplier Portal",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "liveChat": "Live chat"
+  },
+  "search": {
+    "naturalDiamonds": "Natural diamonds",
+    "labGrownDiamonds": "Lab-grown diamonds",
+    "gemstones": "Gemstones",
+    "new": "New!",
+    "results": "results",
+    "sortRecent": "Sort: Recently added",
+    "savedSearches": "Saved searches",
+    "myOrders": "My Orders",
+    "pendingDelivery": "Pending Delivery",
+    "ordersFulfilled": "Orders Fulfilled",
+    "myReturns": "My Returns",
+    "orderId": "Order ID",
+    "orderDate": "Order Date",
+    "noPendingOrders": "You have no orders pending delivery.",
+    "noFulfilledOrders": "You have no fulfilled orders.",
+    "noReturns": "You have no past returns."
+  }
+}

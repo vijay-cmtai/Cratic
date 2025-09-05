@@ -1,0 +1,36 @@
+
+{
+  "header": {
+    "solutions": "Soluciones",
+    "language": "Español",
+    "currency": "USD",
+    "share": "Compartir",
+    "likedItems": "Artículos guardados",
+    "noLikedItems": "Aún no hay artículos guardados.",
+    "noLikedItemsHint": "Haz clic en el corazón de un producto para guardarlo.",
+    "myAccount": "Mi cuenta",
+    "supplierPortal": "Portal de proveedores",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "liveChat": "Chat en vivo"
+  },
+  "search": {
+    "naturalDiamonds": "Diamantes naturales",
+    "labGrownDiamonds": "Diamantes de laboratorio",
+    "gemstones": "Piedras preciosas",
+    "new": "¡Nuevo!",
+    "results": "resultados",
+    "sortRecent": "Ordenar: Agregados recientemente",
+    "savedSearches": "Búsquedas guardadas",
+    "myOrders": "Mis Pedidos",
+    "pendingDelivery": "Entrega Pendiente",
+    "ordersFulfilled": "Pedidos Completados",
+    "myReturns": "Mis Devoluciones",
+    "orderId": "ID del Pedido",
+    "orderDate": "Fecha del Pedido",
+    "noPendingOrders": "No tienes pedidos pendientes de entrega.",
+    "noFulfilledOrders": "No tienes pedidos completados.",
+    "noReturns": "No tienes devoluciones pasadas."
+  }
+}

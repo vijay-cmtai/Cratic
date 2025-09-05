@@ -1,0 +1,36 @@
+
+{
+  "header": {
+    "solutions": "समाधान",
+    "language": "हिन्दी",
+    "currency": "USD",
+    "share": "शेयर करें",
+    "likedItems": "पसंद की गई वस्तुएं",
+    "noLikedItems": "अभी तक कोई पसंदीदा आइटम नहीं है।",
+    "noLikedItemsHint": "किसी उत्पाद को सहेजने के लिए उसके दिल पर क्लिक करें।",
+    "myAccount": "मेरा खाता",
+    "supplierPortal": "आपूर्तिकर्ता पोर्टल",
+    "logout": "लॉग आउट",
+    "login": "लॉग इन करें",
+    "register": "रजिस्टर करें",
+    "liveChat": "लाइव चैट"
+  },
+  "search": {
+    "naturalDiamonds": "प्राकृतिक हीरे",
+    "labGrownDiamonds": "लैब में बने हीरे",
+    "gemstones": "रत्न",
+    "new": "नया!",
+    "results": "परिणाम",
+    "sortRecent": "क्रमबद्ध करें: हाल ही में जोड़ा गया",
+    "savedSearches": "सहेजी गई खोजें",
+    "myOrders": "मेरे ऑर्डर",
+    "pendingDelivery": "डिलीवरी लंबित है",
+    "ordersFulfilled": "ऑर्डर पूरे हुए",
+    "myReturns": "मेरी वापसी",
+    "orderId": "ऑर्डर आईडी",
+    "orderDate": "आदेश की तारीख",
+    "noPendingOrders": "आपके पास डिलीवरी के लिए कोई लंबित ऑर्डर नहीं है।",
+    "noFulfilledOrders": "आपके पास कोई भी ऑर्डर पूरा नहीं हुआ है।",
+    "noReturns": "आपके पास कोई पिछला रिटर्न नहीं है।"
+  }
+}
