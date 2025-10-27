@@ -1,9 +1,9 @@
-
 import axios from "axios";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/store";
 import { fetchCart } from "@/lib/features/cart/cartSlice";
-// --- Interfaces (No changes) ---
+
+// --- Interfaces (No changes needed here) ---
 export interface PopulatedOrderItem {
   _id: string;
   stockId: string;
@@ -17,11 +17,13 @@ export interface PopulatedOrderItem {
     imageLink?: string;
   };
 }
+
 export interface OrderUser {
   _id: string;
   name: string;
   email: string;
 }
+
 export interface Order {
   _id: string;
   userId: OrderUser;
@@ -31,17 +33,20 @@ export interface Order {
   paymentInfo: { payment_status: string };
   createdAt: string;
 }
+
 export interface RazorpayOrderResponse {
   id: string;
   amount: number;
   currency: string;
 }
+
 export interface CreateOrderResponse {
   order: Order;
   razorpayOrder: RazorpayOrderResponse;
   razorpayKeyId: string;
 }
 
+// ✅ INTERFACE UPDATE: myOrders added
 interface OrderState {
   create: {
     lastOrder: Order | null;
@@ -62,16 +67,28 @@ interface OrderState {
     status: "idle" | "loading" | "succeeded" | "failed";
     error: string | null;
   };
+  // This new state is for the user's personal orders page
+  myOrders: {
+    data: Order[];
+    status: "idle" | "loading" | "succeeded" | "failed";
+    error: string | null;
+  };
 }
+
+// ✅ INITIAL STATE UPDATE: myOrders added
 const initialState: OrderState = {
   create: { lastOrder: null, status: "idle", error: null },
   verify: { status: "idle", error: null },
   current: { data: null, status: "idle", error: null },
   sellerOrders: { data: [], status: "idle", error: null },
+  myOrders: { data: [], status: "idle", error: null },
 };
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/orders`;
 const getToken = (state: RootState) => state.user.userInfo?.token;
+
+// --- Async Thunks ---
+
 export const createOrderAndInitiatePayment = createAsyncThunk<
   CreateOrderResponse,
   void,
@@ -96,6 +113,7 @@ export const createOrderAndInitiatePayment = createAsyncThunk<
     }
   }
 );
+
 export const verifyPayment = createAsyncThunk<
   { orderId: string },
   {
@@ -120,6 +138,7 @@ export const verifyPayment = createAsyncThunk<
     );
   }
 });
+
 export const fetchOrderById = createAsyncThunk<
   Order,
   string,
@@ -139,7 +158,7 @@ export const fetchOrderById = createAsyncThunk<
     );
   }
 });
-// Thunk to fetch seller orders
+
 export const fetchSellerOrders = createAsyncThunk<
   Order[],
   void,
@@ -149,10 +168,8 @@ export const fetchSellerOrders = createAsyncThunk<
     const token = getToken(getState());
     if (!token) throw new Error("Not authorized");
     const { data } = await axios.get<{ orders: Order[] }>(
-      `${API_URL}/seller-orders`, 
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      `${API_URL}/seller-orders`,
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     return data.orders;
   } catch (error: any) {
@@ -161,6 +178,32 @@ export const fetchSellerOrders = createAsyncThunk<
     );
   }
 });
+
+// ✅ YEH HAI AAPKA NAYA THUNK JO EXPORT HO RAHA HAI
+export const fetchMyOrders = createAsyncThunk<
+  Order[],
+  void,
+  { state: RootState }
+>("order/fetchMyOrders", async (_, { getState, rejectWithValue }) => {
+  try {
+    const token = getToken(getState());
+    if (!token) throw new Error("Not authorized, no token");
+
+    // Important: Aapke backend API mein GET /api/orders/myorders route hona chahiye
+    const { data } = await axios.get<{ orders: Order[] }>(
+      `${API_URL}/myorders`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return data.orders;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch your orders"
+    );
+  }
+});
+
 // --- The Slice ---
 const orderSlice = createSlice({
   name: "order",
@@ -178,7 +221,7 @@ const orderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // (Create, Verify, FetchByID reducers have no changes)
+      // Create Order
       .addCase(createOrderAndInitiatePayment.pending, (state) => {
         state.create.status = "loading";
       })
@@ -190,6 +233,7 @@ const orderSlice = createSlice({
         state.create.status = "failed";
         state.create.error = action.payload as string;
       })
+      // Verify Payment
       .addCase(verifyPayment.pending, (state) => {
         state.verify.status = "loading";
       })
@@ -200,6 +244,7 @@ const orderSlice = createSlice({
         state.verify.status = "failed";
         state.verify.error = action.payload as string;
       })
+      // Fetch Order By ID
       .addCase(fetchOrderById.pending, (state) => {
         state.current.status = "loading";
       })
@@ -211,7 +256,7 @@ const orderSlice = createSlice({
         state.current.status = "failed";
         state.current.error = action.payload as string;
       })
-      // Handle Seller Orders states
+      // Fetch Seller Orders
       .addCase(fetchSellerOrders.pending, (state) => {
         state.sellerOrders.status = "loading";
       })
@@ -222,8 +267,24 @@ const orderSlice = createSlice({
       .addCase(fetchSellerOrders.rejected, (state, action) => {
         state.sellerOrders.status = "failed";
         state.sellerOrders.error = action.payload as string;
+      })
+      // ✅ YEH HAIN NAYE REDUCERS AAPKE `myOrders` STATE KE LIYE
+      .addCase(fetchMyOrders.pending, (state) => {
+        state.myOrders.status = "loading";
+      })
+      .addCase(
+        fetchMyOrders.fulfilled,
+        (state, action: PayloadAction<Order[]>) => {
+          state.myOrders.status = "succeeded";
+          state.myOrders.data = action.payload;
+        }
+      )
+      .addCase(fetchMyOrders.rejected, (state, action) => {
+        state.myOrders.status = "failed";
+        state.myOrders.error = action.payload as string;
       });
   },
 });
+
 export const { resetCreateOrderStatus, resetCurrentOrder } = orderSlice.actions;
 export default orderSlice.reducer;
