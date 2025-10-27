@@ -19,7 +19,11 @@ interface UserInfo {
   token: string;
   companyName?: string;
   companyAddress?: string;
-  registrationNumber?: string;
+  tradingName?: string;
+  businessType?: string;
+  companyCountry?: string;
+  companyWebsite?: string;
+  corporateIdentityNumber?: string;
   references?: string;
   createdAt?: string;
 }
@@ -28,29 +32,46 @@ interface UserInfo {
 interface UserState {
   userInfo: UserInfo | null;
   users: UserInfo[];
+  selectedUser: UserInfo | null;
+  singleStatus: "idle" | "loading" | "succeeded" | "failed";
+  singleError: string | null;
   pagination: any;
   actionStatus: "idle" | "loading" | "succeeded" | "failed";
   listStatus: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
+const getUserInfoFromStorage = (): UserInfo | null => {
+  if (typeof window !== "undefined") {
+    const userInfoJSON = localStorage.getItem("userInfo");
+    try {
+      if (userInfoJSON) {
+        return JSON.parse(userInfoJSON) as UserInfo;
+      }
+    } catch (e) {
+      console.error("Failed to parse userInfo from localStorage", e);
+      localStorage.removeItem("userInfo"); 
+      return null;
+    }
+  }
+  return null;
+};
+
 const initialState: UserState = {
-  userInfo: null,
+  userInfo: getUserInfoFromStorage(),
   users: [],
+  selectedUser: null,
+  singleStatus: "idle",
+  singleError: null,
   pagination: null,
   actionStatus: "idle",
   listStatus: "idle",
   error: null,
 };
 
-// ✅✅ YAHAN SABSE BADA BADLAV KIYA GAYA HAI ✅✅
-// Next.js mein environment variable is tarah se access hota hai
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
-
 const getToken = (state: RootState) => state.user.userInfo?.token;
-
-// --- ASYNC THUNKS (Inmein koi badlav nahi hai) ---
-
+// --- ASYNC THUNKS ---
 export const registerUser = createAsyncThunk<UserInfo, FormData>(
   "user/register",
   async (userData, { rejectWithValue }) => {
@@ -64,13 +85,15 @@ export const registerUser = createAsyncThunk<UserInfo, FormData>(
     }
   }
 );
-
 export const loginUser = createAsyncThunk<
   UserInfo,
   { email: string; password: string }
 >("user/login", async (loginData, { rejectWithValue }) => {
   try {
     const { data } = await axios.post<UserInfo>(`${API_URL}/login`, loginData);
+    if (data) {
+      localStorage.setItem("userInfo", JSON.stringify(data));
+    }
     return data;
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || "Login failed");
@@ -96,6 +119,8 @@ export const updateProfile = createAsyncThunk<
     );
 
     const updatedUserInfo = { ...state.user.userInfo, ...data, token };
+    localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
+
     return updatedUserInfo;
   } catch (error: any) {
     return rejectWithValue(
@@ -140,6 +165,27 @@ export const fetchAllUsers = createAsyncThunk<
   }
 });
 
+export const fetchUserById = createAsyncThunk<
+  UserInfo,
+  string,
+  { state: RootState }
+>("user/fetchById", async (userId, { getState, rejectWithValue }) => {
+  try {
+    const token = getToken(getState());
+    if (!token) throw new Error("Not authorized");
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    const { data } = await axios.get<UserInfo>(
+      `${API_URL}/admin/${userId}`,
+      config
+    );
+    return data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch user details"
+    );
+  }
+});
+
 export const updateUserStatus = createAsyncThunk<
   UserInfo,
   { userId: string; status: "Approved" | "Rejected" },
@@ -166,17 +212,20 @@ export const updateUserStatus = createAsyncThunk<
 );
 
 // --- USER SLICE ---
-
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     logout: (state) => {
+      localStorage.removeItem("userInfo"); 
       state.userInfo = null;
       state.users = [];
+      state.selectedUser = null;
       state.actionStatus = "idle";
       state.listStatus = "idle";
+      state.singleStatus = "idle";
       state.error = null;
+      state.singleError = null;
     },
     resetActionStatus: (state) => {
       state.actionStatus = "idle";
@@ -207,6 +256,7 @@ const userSlice = createSlice({
         state.actionStatus = "succeeded";
       })
       .addCase(registerUser.rejected, actionRejected)
+
       .addCase(loginUser.pending, actionPending)
       .addCase(
         loginUser.fulfilled,
@@ -216,6 +266,7 @@ const userSlice = createSlice({
         }
       )
       .addCase(loginUser.rejected, actionRejected)
+
       .addCase(updateProfile.pending, actionPending)
       .addCase(
         updateProfile.fulfilled,
@@ -225,15 +276,18 @@ const userSlice = createSlice({
         }
       )
       .addCase(updateProfile.rejected, actionRejected)
+
       .addCase(deleteUser.pending, actionPending)
       .addCase(deleteUser.fulfilled, (state, action: PayloadAction<string>) => {
         state.actionStatus = "succeeded";
         state.users = state.users.filter((u) => u._id !== action.payload);
         if (state.userInfo?._id === action.payload) {
           state.userInfo = null;
+          localStorage.removeItem("userInfo");
         }
       })
       .addCase(deleteUser.rejected, actionRejected)
+
       .addCase(fetchAllUsers.pending, listPending)
       .addCase(
         fetchAllUsers.fulfilled,
@@ -243,6 +297,23 @@ const userSlice = createSlice({
         }
       )
       .addCase(fetchAllUsers.rejected, listRejected)
+
+      .addCase(fetchUserById.pending, (state) => {
+        state.singleStatus = "loading";
+        state.singleError = null;
+      })
+      .addCase(
+        fetchUserById.fulfilled,
+        (state, action: PayloadAction<UserInfo>) => {
+          state.singleStatus = "succeeded";
+          state.selectedUser = action.payload;
+        }
+      )
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.singleStatus = "failed";
+        state.singleError = action.payload as string;
+      })
+
       .addCase(updateUserStatus.pending, actionPending)
       .addCase(
         updateUserStatus.fulfilled,
@@ -253,6 +324,9 @@ const userSlice = createSlice({
           );
           if (index !== -1) {
             state.users[index] = action.payload;
+          }
+          if (state.selectedUser?._id === action.payload._id) {
+            state.selectedUser = action.payload;
           }
         }
       )

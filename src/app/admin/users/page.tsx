@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react"; // ✅ useState ko import karein
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -13,13 +14,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-// ✅ Zaroori icons import karein
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
-
+import { Loader2, Eye } from "lucide-react";
 import { AppDispatch, RootState } from "@/lib/store";
 import { fetchAllUsers } from "@/lib/features/users/userSlice";
 
-// Helper function to format date strings
 const formatDate = (dateString?: string) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString();
@@ -27,23 +25,18 @@ const formatDate = (dateString?: string) => {
 
 export default function AdminUsersPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const { users, listStatus } = useSelector((state: RootState) => state.user);
-
-  // ✅ Step 1: Expanded row ka state manage karne ke liye
-  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
-  const handleToggleDetails = (userId: string) => {
-    setExpandedUserId((prevId) => (prevId === userId ? null : userId));
+  const handleViewDetails = (userId: string) => {
+    router.push(`/admin/users/${userId}`);
   };
 
-  // Badge ke liye sahi variant return karne wala function
-  const getStatusVariant = (
-    status?: string
-  ): "default" | "destructive" | "secondary" | "outline" => {
+  const getStatusVariant = (status?: string) => {
     switch (status) {
       case "Approved":
         return "default";
@@ -82,7 +75,6 @@ export default function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             )}
-
             {listStatus === "succeeded" && users.length === 0 && (
               <TableRow>
                 <TableCell
@@ -93,123 +85,49 @@ export default function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             )}
-
-            {/* ✅ Step 2: Har user ke liye 2 rows render karein (ek main, ek details ke liye) */}
             {listStatus === "succeeded" &&
               users.map((user) => (
-                <React.Fragment key={user._id}>
-                  <TableRow>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback>
-                            {user.name
-                              ? user.name.charAt(0).toUpperCase()
-                              : "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-muted-foreground text-xs">
-                            {user.email}
-                          </div>
+                <TableRow key={user._id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>
+                          {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-muted-foreground text-xs">
+                          {user.email}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          user.role === "Admin" ? "default" : "secondary"
-                        }
-                      >
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.companyName || "N/A"}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(user.status)}>
-                        {user.status || "N/A"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(user.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleDetails(user._id)}
-                      >
-                        {expandedUserId === user._id ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                        <span className="ml-2">Details</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* ✅ Step 3: Collapsible Row - Yeh tabhi dikhegi jab 'expandedUserId' match hoga */}
-                  {expandedUserId === user._id && (
-                    <TableRow className="bg-muted/50 hover:bg-muted/50">
-                      <TableCell colSpan={6}>
-                        <div className="p-4">
-                          <h4 className="font-bold mb-3 text-base text-gray-700">
-                            Additional User Information
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-sm">
-                            <div>
-                              <p className="text-gray-500">Trading Name</p>
-                              <p className="font-medium">
-                                {user.tradingName || "N/A"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Business Type</p>
-                              <p className="font-medium">
-                                {user.businessType || "N/A"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Country</p>
-                              <p className="font-medium">
-                                {user.companyCountry || "N/A"}
-                              </p>
-                            </div>
-                            <div className="col-span-1 md:col-span-2">
-                              <p className="text-gray-500">Company Website</p>
-                              <a
-                                href={user.companyWebsite}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-medium text-blue-600 hover:underline"
-                              >
-                                {user.companyWebsite || "N/A"}
-                              </a>
-                            </div>
-                            <div className="col-span-1 md:col-span-2">
-                              <p className="text-gray-500">Company Address</p>
-                              <p className="font-medium">
-                                {user.companyAddress || "N/A"}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Corporate ID No.</p>
-                              <p className="font-medium">
-                                {user.corporateIdentityNumber || "N/A"}
-                              </p>
-                            </div>
-                            <div className="col-span-full">
-                              <p className="text-gray-500">References</p>
-                              <p className="font-medium whitespace-pre-wrap">
-                                {user.references || "N/A"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={user.role === "Admin" ? "default" : "secondary"}
+                    >
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{user.companyName || "N/A"}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(user.status)}>
+                      {user.status || "N/A"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(user._id)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
           </TableBody>
         </Table>
