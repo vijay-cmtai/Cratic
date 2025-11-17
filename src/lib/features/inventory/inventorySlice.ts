@@ -66,7 +66,6 @@ const initialState: InventoryState = {
   error: null,
   summary: null,
   diamonds: [],
-  listStatus: "idle",
   page: 1,
   pages: 1,
   total: 0,
@@ -83,6 +82,8 @@ const getAuthHeaders = (getState: () => unknown) => {
   }
   return {};
 };
+
+// --- Async Thunks ---
 
 export const fetchDiamonds = createAsyncThunk(
   "inventory/fetchDiamonds",
@@ -216,10 +217,12 @@ export const syncFromApi = createAsyncThunk(
       apiUrl,
       mapping,
       sellerId,
+      enableAutoSync,
     }: {
       apiUrl: string;
       mapping: Record<string, string>;
       sellerId?: string | null;
+      enableAutoSync: boolean;
     },
     { getState, rejectWithValue }
   ) => {
@@ -227,7 +230,7 @@ export const syncFromApi = createAsyncThunk(
       const headers = getAuthHeaders(getState);
       const { data } = await apiClient.post(
         "/inventory/sync-api",
-        { apiUrl, mapping, sellerId },
+        { apiUrl, mapping, sellerId, enableAutoSync },
         { headers }
       );
       return data;
