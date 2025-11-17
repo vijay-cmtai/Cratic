@@ -42,7 +42,7 @@ export const fetchAllOrders = createAsyncThunk<
 
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const { data } = await axios.get<{ orders: ApiOrder[] }>(
-      `${API_URL}/admin/all`, // <-- THIS IS THE CORRECT ENDPOINT
+      `${API_URL}/`, // <-- THIS IS THE CORRECT ENDPOINT
       config
     );
 
