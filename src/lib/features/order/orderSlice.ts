@@ -2,7 +2,6 @@ import axios from "axios";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/store";
 import { fetchCart } from "@/lib/features/cart/cartSlice";
-
 // --- Interfaces (No changes needed here) ---
 export interface PopulatedOrderItem {
   _id: string;
@@ -17,13 +16,11 @@ export interface PopulatedOrderItem {
     imageLink?: string;
   };
 }
-
 export interface OrderUser {
   _id: string;
   name: string;
   email: string;
 }
-
 export interface Order {
   _id: string;
   userId: OrderUser;
@@ -33,19 +30,16 @@ export interface Order {
   paymentInfo: { payment_status: string };
   createdAt: string;
 }
-
 export interface RazorpayOrderResponse {
   id: string;
   amount: number;
   currency: string;
 }
-
 export interface CreateOrderResponse {
   order: Order;
   razorpayOrder: RazorpayOrderResponse;
   razorpayKeyId: string;
 }
-
 // ✅ INTERFACE UPDATE: myOrders added
 interface OrderState {
   create: {
@@ -74,7 +68,6 @@ interface OrderState {
     error: string | null;
   };
 }
-
 // ✅ INITIAL STATE UPDATE: myOrders added
 const initialState: OrderState = {
   create: { lastOrder: null, status: "idle", error: null },
@@ -83,12 +76,9 @@ const initialState: OrderState = {
   sellerOrders: { data: [], status: "idle", error: null },
   myOrders: { data: [], status: "idle", error: null },
 };
-
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/orders`;
 const getToken = (state: RootState) => state.user.userInfo?.token;
-
 // --- Async Thunks ---
-
 export const createOrderAndInitiatePayment = createAsyncThunk<
   CreateOrderResponse,
   void,
