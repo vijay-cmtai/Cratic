@@ -42,11 +42,11 @@ const getInitials = (name: string = "") =>
 
 const supplierNavLinks = [
   { href: "/supplier/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/supplier/products", label: "Inventory", icon: Package },
-  { href: "/supplier/inventory", label: "Add Inventory", icon: Package },
+  { href: "/supplier/inventory", label: "My Inventory", icon: Package },
+  { href: "/supplier/add-inventory", label: "Add Inventory", icon: Package },
   { href: "/supplier/orders", label: "Orders", icon: ListOrdered },
   { href: "/supplier/profile", label: "My Profile", icon: Building },
-  { href: "/supplier/notifications", label: "Notication", icon:Bell },
+  { href: "/supplier/notifications", label: "Notication", icon: Bell },
 ];
 
 export default function SupplierLayout({
