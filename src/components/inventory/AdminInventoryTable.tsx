@@ -73,7 +73,6 @@ const placeholderImage = "/placeholder-diamond.jpg";
 const isValidImageUrl = (url?: string): url is string => {
   return !!url && (url.startsWith("http://") || url.startsWith("https://"));
 };
-
 export default function AdminInventoryTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
