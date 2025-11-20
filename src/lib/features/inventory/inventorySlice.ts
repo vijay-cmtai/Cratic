@@ -83,16 +83,15 @@ const getAuthHeaders = (getState: () => unknown) => {
   return {};
 };
 
-// --- Async Thunks ---
-
 export const fetchDiamonds = createAsyncThunk(
   "inventory/fetchDiamonds",
   async (
     params: { page?: number; search?: string; [key: string]: any },
-    { rejectWithValue }
+    { getState, rejectWithValue }
   ) => {
     try {
-      const { data } = await apiClient.get("/inventory", { params });
+      const headers = getAuthHeaders(getState);
+      const { data } = await apiClient.get("/inventory", { params, headers });
       return data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -247,6 +246,7 @@ export const syncFromFtp = createAsyncThunk(
       ftpCreds: { host: string; user: string; password: string; path: string };
       mapping: Record<string, string>;
       sellerId?: string | null;
+      enableAutoSync: boolean;
     },
     { getState, rejectWithValue }
   ) => {
@@ -254,8 +254,9 @@ export const syncFromFtp = createAsyncThunk(
       const headers = getAuthHeaders(getState);
       const backendPayload = {
         ...payload.ftpCreds,
-        mapping: payload.mapping,
+        mapping: JSON.stringify(payload.mapping),
         sellerId: payload.sellerId,
+        enableAutoSync: payload.enableAutoSync,
       };
       const { data } = await apiClient.post(
         "/inventory/sync-ftp",
